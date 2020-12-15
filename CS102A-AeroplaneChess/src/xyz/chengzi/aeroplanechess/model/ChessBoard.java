@@ -1,5 +1,6 @@
 package xyz.chengzi.aeroplanechess.model;
 
+import com.sun.corba.se.spi.orbutil.fsm.FSM;
 import jdk.nashorn.internal.ir.OptimisticLexicalContext;
 import xyz.chengzi.aeroplanechess.controller.GameController;
 import xyz.chengzi.aeroplanechess.listener.ChessBoardListener;
@@ -17,6 +18,12 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
     private final int dimension, endDimension;
     public int[][] NumberTotal = new int[4][4];
     private List<ChessPiece> chessPieces = new ArrayList<>();
+    private boolean IsThereAPlane;
+    private boolean WhetherToEat;
+
+
+
+    private boolean FastWay ;
 
     public List<ChessPiece> getChessPieces() {
         return chessPieces;
@@ -132,14 +139,24 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
 
     public void moveChessPiece(ChessBoardLocation src, int steps, ChessPiece piece) {
         ChessBoardLocation dest = src;
+        ChessBoardLocation destold = dest;
 
         // FIXME: This just naively move the chess forward without checking anything
+
+//        if(FastWay){
+//            if(src.getIndex() == 4 || src.getIndex() == 7){
+//                steps = steps+12;
+//            }else{
+//                steps = steps+4;
+//            }
+//        }
+
 
         if(steps == 0){
             return;
         }
+
         if (dest.getIndex() <= 18) {
-            System.out.println(implementFofMethods.CheckAnyPlayer(piece,this,src));
             for (int i = 0; i < steps; i++) {
                 dest = nextLocation(dest, piece);
             }
@@ -166,8 +183,35 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
                 dest = new ChessBoardLocation(dest.getColor(), dest.getIndex() + steps - 1);
             }
         }
+        IsThereAPlane =implementFofMethods.CheckAnyPlayer(piece,this,dest);
+        ChessPiece EatenPiece = this.getGridAt(dest).getPiece();
+        if(IsThereAPlane){
+            System.out.println(implementFofMethods.EatOthersPiece(piece,EatenPiece,this,destold,dest));
+        }
+        WhetherToEat = implementFofMethods.EatOthersPiece(piece,EatenPiece,this,destold,dest);
+        if(WhetherToEat){
+            int number = EatenPiece.getNumber();
+            int color = EatenPiece.getPlayer();
+            ChessPiece piece1 = new ChessPiece(color,number);
+            setChessPieceAt(grid[color][number+dimension+endDimension].getLocation(),piece1);
+        }
+
+        boolean temp = true;
+
+        if(19<=src.getIndex() && src.getIndex()<=23){
+            temp = false;
+        }
+        FastWay = implementFofMethods.BonusLocation(dest,piece);
+        FastWay = FastWay & temp;
+        System.out.println(FastWay);
+
+
         setChessPieceAt(dest, removeChessPieceAt(src));
     }
+    public boolean isFastWay() {
+        return FastWay;
+    }
+
 
     public ChessBoardLocation nextLocation(ChessBoardLocation location, ChessPiece piece) {
         // FIXME: This move the chess to next jump location instead of nearby next location

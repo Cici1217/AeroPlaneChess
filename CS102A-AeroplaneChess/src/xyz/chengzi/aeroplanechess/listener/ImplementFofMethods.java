@@ -37,51 +37,38 @@ public class ImplementFofMethods implements MethodsForPlaying {
     }
 
     @Override
-    public List<ChessLocation> EatOthersPiece(ChessLocation locationOne, ChessLocation locationTwo) {
-        List<ChessLocation> locations=new LinkedList<ChessLocation>();
-
-//        if (locationOne.getPlayer() != locationTwo.getPlayer()) {
-//            if (CheckAnyPlayer(locationTwo)){
-//                ChessLocation newLocation = new ChessLocation(locationTwo.getColor(),locationTwo.getIndex(),locationOne.getPlayer(),locationOne.getNumber());
-//                ChessLocation oldLocation = new ChessLocation(locationOne.getColor(),locationOne.getIndex(),4,4);
-//                locations.add(newLocation);
-//                locations.add(oldLocation);
-//            }else {
-//                ChessLocation newLocation = new ChessLocation(locationTwo.getColor(),locationTwo.getIndex(),locationOne.getPlayer(),locationOne.getNumber());
-//                ChessLocation oldLocation = new ChessLocation(locationOne.getColor(),locationOne.getIndex(),4,locationOne.getNumber());
-//                for (int i=19;i<23;i++) {
-//                    ChessLocation loseLocation = new ChessLocation(locationTwo.getColor(),i,locationTwo.getPlayer(),locationTwo.getNumber());//?
-//                    if (CheckAnyPlayer(loseLocation)){
-//                     loseLocation = new ChessLocation(locationTwo.getColor(),i, locationTwo.getPlayer(), locationTwo.getNumber());
-//                        locations.add(loseLocation);
-//                    break;
-//                    }
-//                }
-//                locations.add(newLocation);
-//                locations.add(oldLocation);
-//            }
-//        }
-        return locations;
-    }
-
-    @Override
-    public boolean CheckAnyPlayer(ChessPiece piece, ChessBoard board ,ChessBoardLocation location) {
-        for(int i =0;i<board.getChessPieces().size();i++){
-            if(board.getChessPieces().get(i)== board.getChessPieceAt(location)){
-                return true;
+    public boolean EatOthersPiece(ChessPiece piece1 , ChessPiece piece2 ,ChessBoard board ,ChessBoardLocation location1,ChessBoardLocation location2) {
+        if(CheckAnyPlayer(piece1,board,location2)){
+            if(board.getGridAt(location2).getPiece() == piece2){
+                if(piece1.getPlayer() != piece2.getPlayer()){
+                    return true;
+                }
             }
         }
         return false;
     }
 
-
-    //检查这个位置是否有飞机，没有的话返回true，有的话返回false
     @Override
-    public ChessLocation BonusLocation(ChessLocation locationOne, ChessLocation locationTwo){
-        if (locationOne.getColor()==locationTwo.getColor())
-        return new ChessLocation(locationTwo.getColor(),locationTwo.getIndex()+1,locationOne.getPlayer(),locationOne.getNumber());
-        else return null;
+    public boolean CheckAnyPlayer(ChessPiece piece ,ChessBoard board ,ChessBoardLocation location) {
+            if(board.getGridAt(location).getPiece()==null){
+                return false;
+            }
+            if(board.getGridAt(location).getPiece() == piece){
+                return false;
+            }
+        return true;
     }
+
+
+    @Override
+    public boolean BonusLocation(ChessBoardLocation location , ChessPiece chessPiece){
+        if (location.getColor() == chessPiece.getPlayer()){
+            return true;
+        }
+        return false;
+    }
+    //有一点错误
+    //尚未完成
 
     @Override
     public List<ChessLocation> EatOtherPiecesWhenFlying(ChessLocation locationOne, ChessLocation locationTwo,ChessLocation locationThree) {

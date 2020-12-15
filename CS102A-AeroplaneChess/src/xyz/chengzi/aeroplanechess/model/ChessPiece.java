@@ -16,4 +16,5 @@ public class ChessPiece {
     public int getNumber() {
         return number;
     }
+
 }

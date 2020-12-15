@@ -15,11 +15,11 @@ public interface MethodsForPlaying {
 
     int[] NumberOfMove(int numberOfDiceOne, int numberOfDiceTwo);
 
-    List<ChessLocation> EatOthersPiece(ChessLocation locationOne, ChessLocation locationTwo);
+    boolean EatOthersPiece(ChessPiece piece1 , ChessPiece piece2 ,ChessBoard board ,ChessBoardLocation location1 , ChessBoardLocation location2);
 
-    boolean CheckAnyPlayer(ChessPiece piece, ChessBoard board ,ChessBoardLocation location);
+    boolean CheckAnyPlayer(ChessPiece piece ,ChessBoard board ,ChessBoardLocation location);
 
-    ChessLocation BonusLocation(ChessLocation locationOne, ChessLocation locationTwo);
+    boolean BonusLocation(ChessBoardLocation location , ChessPiece chessPiece);
 
     //TODO:next:implement methods
 

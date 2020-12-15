@@ -130,7 +130,12 @@ public class GameController implements InputListener, Listenable<GameStateListen
                 }
             }
             if (piece.getPlayer() == currentPlayer) {
-                model.moveChessPiece(location, x, piece);
+                if(model.isFastWay()){
+                    model.moveChessPiece(location, x+4, piece);
+                }else{
+                    model.moveChessPiece(location, x, piece);
+                }
+
                 listenerList.forEach(listener -> listener.onPlayerEndRound(currentPlayer));
                 nextPlayer();
                 listenerList.forEach(listener -> listener.onPlayerStartRound(currentPlayer));
