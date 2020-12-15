@@ -3,9 +3,11 @@ package xyz.chengzi.aeroplanechess.model;
 import jdk.nashorn.internal.ir.OptimisticLexicalContext;
 import xyz.chengzi.aeroplanechess.controller.GameController;
 import xyz.chengzi.aeroplanechess.listener.ChessBoardListener;
+import xyz.chengzi.aeroplanechess.listener.ImplementFofMethods;
 import xyz.chengzi.aeroplanechess.listener.Listenable;
 import xyz.chengzi.aeroplanechess.view.GameFrame;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,13 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
     private final Square[][] grid;
     private final int dimension, endDimension;
     public int[][] NumberTotal = new int[4][4];
+    private List<ChessPiece> chessPieces = new ArrayList<>();
+
+    public List<ChessPiece> getChessPieces() {
+        return chessPieces;
+    }
+
+    ImplementFofMethods implementFofMethods = new ImplementFofMethods();
     public void WriteArr(){
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
@@ -27,8 +36,23 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         this.grid = new Square[4][dimension + endDimension + 5];
         this.dimension = dimension;
         this.endDimension = endDimension;
-
         initGrid();
+    }
+
+    public void placeLoadedPieces(ChessBoardLocation[][] locations) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < dimension + endDimension + 5; j++) {
+                grid[i][j].setPiece(null);
+            }
+        }
+        for (int player = 0; player < 4; player++) {
+            for (int num = 0; num < 4; num++) {
+                grid[locations[player][num].getColor()][locations[player][num].getIndex()]
+                        .setPiece(new ChessPiece(player, num));
+            }
+        }
+        listenerList.forEach(listener -> listener.onChessBoardReload(this));
+
     }
 
     private void initGrid() {
@@ -62,6 +86,15 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         grid[3][dimension + endDimension + 1].setPiece(new ChessPiece(3, 1));
         grid[3][dimension + endDimension + 2].setPiece(new ChessPiece(3, 2));
         grid[3][dimension + endDimension + 3].setPiece(new ChessPiece(3, 3));
+        int n;
+        for(int i =0;i<=3;i++){
+            n = 0;
+            for(int j =dimension+endDimension ;j<=dimension+endDimension+3;j++){
+                ChessPiece chessPiece = new ChessPiece(grid[i][j].getLocation().getColor(),n);
+                n=n+1;
+                chessPieces.add(chessPiece);
+            }
+        }
         listenerList.forEach(listener -> listener.onChessBoardReload(this));
     }
 
@@ -74,7 +107,7 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
     }
 
     public int getAllDimension() {
-        return dimension + endDimension + 4;
+        return dimension + endDimension + 5;
     }
 
     public int getEndDimension() {
@@ -106,6 +139,7 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
             return;
         }
         if (dest.getIndex() <= 18) {
+            System.out.println(implementFofMethods.CheckAnyPlayer(piece,this,src));
             for (int i = 0; i < steps; i++) {
                 dest = nextLocation(dest, piece);
             }

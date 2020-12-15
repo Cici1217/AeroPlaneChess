@@ -17,7 +17,7 @@ public interface MethodsForPlaying {
 
     List<ChessLocation> EatOthersPiece(ChessLocation locationOne, ChessLocation locationTwo);
 
-    boolean CheckAnyPlayer(ChessLocation location);
+    boolean CheckAnyPlayer(ChessPiece piece, ChessBoard board ,ChessBoardLocation location);
 
     ChessLocation BonusLocation(ChessLocation locationOne, ChessLocation locationTwo);
 

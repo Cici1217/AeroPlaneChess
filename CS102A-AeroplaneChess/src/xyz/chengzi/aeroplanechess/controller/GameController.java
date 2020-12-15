@@ -45,15 +45,6 @@ public class GameController implements InputListener, Listenable<GameStateListen
     private Integer rolledNumber;
     ImplementFofMethods implementFofMethods = new ImplementFofMethods();
 
-
-    public Integer getRolledNumber() {
-        int num1 = rolledNumber >> 16;
-        int num2 = rolledNumber & 0x00ff;
-
-        System.out.println(notation);
-        return implementFofMethods.NumberOfMove(num1, num2)[notation];
-    }
-
     private int currentPlayer;
 
     public GameController(ChessBoardComponent chessBoardComponent, ChessBoard chessBoard) {
@@ -61,6 +52,21 @@ public class GameController implements InputListener, Listenable<GameStateListen
         this.model = chessBoard;
         view.registerListener(this);
         model.registerListener(view);
+    }
+
+    public void loadGame(ChessBoardLocation[][] locations, int turn){
+        model.placeLoadedPieces(locations);
+        rolledNumber = null;
+        currentPlayer = turn;
+        listenerList.forEach(listener -> listener.onPlayerStartRound(currentPlayer));
+    }
+
+    public Integer getRolledNumber() {
+        int num1 = rolledNumber >> 16;
+        int num2 = rolledNumber & 0x00ff;
+
+//        System.out.println(notation);
+        return implementFofMethods.NumberOfMove(num1, num2)[notation];
     }
 
     public ChessBoardComponent getView() {
