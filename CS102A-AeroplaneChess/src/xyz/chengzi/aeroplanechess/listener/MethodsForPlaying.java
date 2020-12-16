@@ -39,7 +39,7 @@ public interface MethodsForPlaying {
     //play passes to the next player.
 
 
-    boolean ChooseToStack(ChessPiece chessPiece1 , ChessPiece chessPiece2 ,ChessBoard board , ChessBoardLocation location2);
+    int ChooseToStack(ChessPiece chessPiece1 , ChessPiece chessPiece2 ,ChessBoard board , ChessBoardLocation location2);
     //When a plane lands on another plane in its own color, the player can choose to stack
     //the pieces and move them as one piece until they reach the centre or are landed on by
     //an opponent. When stacked pieces are sent back to their hangar by an opponent

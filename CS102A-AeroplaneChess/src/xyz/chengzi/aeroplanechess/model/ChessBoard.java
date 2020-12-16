@@ -206,17 +206,7 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
             setChessPieceAt(grid[color][number + dimension + endDimension].getLocation(), piece1);
         }
 
-        if (implementFofMethods.ChooseToStack(piece, this.getGridAt(dest).getPiece(), this, dest)) {
-            if (implementFofMethods.x == 0) {
-                System.out.println("fsfsdfsdfs true");
-            } else {
-                System.out.println("fdsofjosjfod false");
-            }
-            System.out.println("CHoose");
-            System.out.println(implementFofMethods.x);
-        }
-        System.out.println(implementFofMethods.x);
-
+        System.out.println(implementFofMethods.ChooseToStack(piece, this.getGridAt(dest).getPiece(), this, dest));
 
         boolean temp = true;
         if (19 <= src.getIndex() && src.getIndex() <= 22) {

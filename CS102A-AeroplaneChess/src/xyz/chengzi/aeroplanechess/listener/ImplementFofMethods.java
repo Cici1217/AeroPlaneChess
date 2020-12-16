@@ -8,13 +8,15 @@ import xyz.chengzi.aeroplanechess.view.ButtonStack;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.util.LinkedList;
 import java.util.List;
 
 public class ImplementFofMethods implements MethodsForPlaying {
 
-    public int x ;
+    public int Stack ;
     private int NumberOfSecondRoll = 0;
 
     public int getNumberOfSecondRoll() {
@@ -100,15 +102,66 @@ public class ImplementFofMethods implements MethodsForPlaying {
     }
 
     @Override
-    public boolean ChooseToStack(ChessPiece chessPiece1, ChessPiece chessPiece2, ChessBoard board, ChessBoardLocation location2) {
+    public int ChooseToStack(ChessPiece chessPiece1, ChessPiece chessPiece2, ChessBoard board, ChessBoardLocation location2) {
         if (CheckAnyPlayer(chessPiece1, board, location2)) {
             if (chessPiece1.getPlayer() == chessPiece2.getPlayer()) {
-                ButtonStack buttonStack = new ButtonStack();
-                System.out.println(buttonStack.getStack());
-                return true;
+                JFrame jf = new JFrame("是否叠机？");
+                jf.setSize(200, 200);
+                jf.setLocationRelativeTo(null);
+                jf.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+                JPanel panel = new JPanel();
+
+                // 创建两个单选按钮
+                JRadioButton radioBtn01 = new JRadioButton("是");
+                JRadioButton radioBtn02 = new JRadioButton("否");
+
+                // 创建按钮组，把两个单选按钮添加到该组
+                ButtonGroup btnGroup = new ButtonGroup();
+                btnGroup.add(radioBtn01);
+                btnGroup.add(radioBtn02);
+
+                // 设置第一个单选按钮选中
+                radioBtn01.setSelected(false);
+                radioBtn02.setSelected(false);
+
+                panel.add(radioBtn01);
+                panel.add(radioBtn02);
+
+                JButton button = new JButton("确定");
+                panel.add(button);
+
+                jf.add(panel);
+                jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                jf.setVisible(true);
+
+                button.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String info ="";
+                        //通过面板属性名获取到该面板上的所有组件
+                        System.out.println(info);
+                        for(Component c:panel.getComponents()){
+                            if(c instanceof JRadioButton){
+                                if(((JRadioButton) c).isSelected()){
+                                    info += ((JRadioButton)c).getText();
+                                }
+                            }
+                        }
+                        System.out.println(info);
+                        if(info.equals("是")){
+                            Stack = 0;
+                        }else{
+                            Stack = 1;
+                        }
+                        JOptionPane.showMessageDialog(null, "你选择了"+info);
+                    }
+                });
+
+                return Stack;
             }
         }
-        return false;
+        return -1;
     }
 
 //    public boolean WhetherToChooseStackTrue() {
