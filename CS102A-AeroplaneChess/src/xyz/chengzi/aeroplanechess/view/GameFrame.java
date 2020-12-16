@@ -79,7 +79,7 @@ public class GameFrame extends JFrame implements GameStateListener {
             int turn = 0;
             try {
                 BufferedReader br = new BufferedReader(new FileReader(file));
-                String line = null;
+                String line ;
                 int index = 0;
                 while ((line = br.readLine()) != null) {
                     System.out.println(line);
@@ -127,6 +127,9 @@ public class GameFrame extends JFrame implements GameStateListener {
         DiceSelectorComponent diceSelectorComponent = new DiceSelectorComponent();
         DiceSelectorComponent diceSelectorComponent1 = new DiceSelectorComponent();
         NotationSelectorComponent notationSelectorComponent = new NotationSelectorComponent();
+//        ButtonStack buttonStack = new ButtonStack();
+//        buttonStack.setLocation(500,450);
+//        add(buttonStack);
         diceSelectorComponent.setLocation(396, 585);
         diceSelectorComponent1.setLocation(396,615);
         notationSelectorComponent.setLocation(396-220,645);
@@ -135,7 +138,6 @@ public class GameFrame extends JFrame implements GameStateListener {
         add(notationSelectorComponent);
 
         JButton button = new JButton("roll");
-
 
         button.addActionListener((e) -> {
             if (diceSelectorComponent.isRandomDice()) {

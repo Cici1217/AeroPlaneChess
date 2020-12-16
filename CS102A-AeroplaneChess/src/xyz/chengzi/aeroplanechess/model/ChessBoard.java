@@ -17,22 +17,22 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
     private final Square[][] grid;
     private final int dimension, endDimension;
     public int[][] NumberTotal = new int[4][4];
-    private List<ChessPiece> chessPieces = new ArrayList<>();
+    //    private List<ChessPiece> chessPieces = new ArrayList<>();
     private boolean IsThereAPlane;
     private boolean WhetherToEat;
 
+    private ChessBoardLocation LocationLast;
+    private boolean FastWay;
 
-
-    private boolean FastWay ;
-
-    public List<ChessPiece> getChessPieces() {
-        return chessPieces;
-    }
+//    public List<ChessPiece> getChessPieces() {
+//        return chessPieces;
+//    }
 
     ImplementFofMethods implementFofMethods = new ImplementFofMethods();
-    public void WriteArr(){
-        for(int i=0;i<4;i++){
-            for(int j=0;j<4;j++){
+
+    public void WriteArr() {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
                 NumberTotal[i][j] = 0;
                 //i:color ; j:number of chess
             }
@@ -77,7 +77,7 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
             }
         }
         // FIXME: Demo implementation
-        grid[0][dimension + endDimension].setPiece(new  ChessPiece(0, 0));
+        grid[0][dimension + endDimension].setPiece(new ChessPiece(0, 0));
         grid[0][dimension + endDimension + 1].setPiece(new ChessPiece(0, 1));
         grid[0][dimension + endDimension + 2].setPiece(new ChessPiece(0, 2));
         grid[0][dimension + endDimension + 3].setPiece(new ChessPiece(0, 3));
@@ -93,15 +93,33 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         grid[3][dimension + endDimension + 1].setPiece(new ChessPiece(3, 1));
         grid[3][dimension + endDimension + 2].setPiece(new ChessPiece(3, 2));
         grid[3][dimension + endDimension + 3].setPiece(new ChessPiece(3, 3));
-        int n;
-        for(int i =0;i<=3;i++){
-            n = 0;
-            for(int j =dimension+endDimension ;j<=dimension+endDimension+3;j++){
-                ChessPiece chessPiece = new ChessPiece(grid[i][j].getLocation().getColor(),n);
-                n=n+1;
-                chessPieces.add(chessPiece);
+//        int n;
+//        for (int i = 0; i <= 3; i++) {
+//            n = 0;
+//            for (int j = dimension + endDimension; j <= dimension + endDimension + 3; j++) {
+//                ChessPiece chessPiece = new ChessPiece(grid[i][j].getLocation().getColor(), n);
+//                n = n + 1;
+//                chessPieces.add(chessPiece);
+//            }
+//        }
+        listenerList.forEach(listener -> listener.onChessBoardReload(this));
+    }
+
+    public void initializeOnePlayer(int player) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j <= 23; j++) {
+                ChessBoardLocation chessBoardLocation = new ChessBoardLocation(i, j);
+                if (this.getGridAt(chessBoardLocation).getPiece() != null) {
+                    if (this.getGridAt(chessBoardLocation).getPiece().getPlayer() == player) {
+                        removeChessPieceAt(chessBoardLocation);
+                    }
+                }
             }
         }
+        grid[player][dimension + endDimension].setPiece(new ChessPiece(player, 0));
+        grid[player][dimension + endDimension + 1].setPiece(new ChessPiece(player, 1));
+        grid[player][dimension + endDimension + 2].setPiece(new ChessPiece(player, 2));
+        grid[player][dimension + endDimension + 3].setPiece(new ChessPiece(player, 3));
         listenerList.forEach(listener -> listener.onChessBoardReload(this));
     }
 
@@ -141,18 +159,9 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         ChessBoardLocation dest = src;
         ChessBoardLocation destold = dest;
 
+
         // FIXME: This just naively move the chess forward without checking anything
-
-//        if(FastWay){
-//            if(src.getIndex() == 4 || src.getIndex() == 7){
-//                steps = steps+12;
-//            }else{
-//                steps = steps+4;
-//            }
-//        }
-
-
-        if(steps == 0){
+        if (steps == 0) {
             return;
         }
 
@@ -177,37 +186,87 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
                 }
             } else {
 
-                if(NumberTotal[piece.getPlayer()][piece.getNumber()]!=0){
+                if (NumberTotal[piece.getPlayer()][piece.getNumber()] != 0) {
                     NumberTotal[piece.getPlayer()][piece.getNumber()] = 2;
                 }
                 dest = new ChessBoardLocation(dest.getColor(), dest.getIndex() + steps - 1);
             }
         }
-        IsThereAPlane =implementFofMethods.CheckAnyPlayer(piece,this,dest);
+
+        IsThereAPlane = implementFofMethods.CheckAnyPlayer(piece, this, dest);
         ChessPiece EatenPiece = this.getGridAt(dest).getPiece();
-        if(IsThereAPlane){
-            System.out.println(implementFofMethods.EatOthersPiece(piece,EatenPiece,this,destold,dest));
-        }
-        WhetherToEat = implementFofMethods.EatOthersPiece(piece,EatenPiece,this,destold,dest);
-        if(WhetherToEat){
+//        if(IsThereAPlane){
+//            System.out.println(implementFofMethods.EatOthersPiece(piece,EatenPiece,this,destold,dest));
+//        }
+        WhetherToEat = implementFofMethods.EatOthersPiece(piece, EatenPiece, this, destold, dest);
+        if (WhetherToEat) {
             int number = EatenPiece.getNumber();
             int color = EatenPiece.getPlayer();
-            ChessPiece piece1 = new ChessPiece(color,number);
-            setChessPieceAt(grid[color][number+dimension+endDimension].getLocation(),piece1);
+            ChessPiece piece1 = new ChessPiece(color, number);
+            setChessPieceAt(grid[color][number + dimension + endDimension].getLocation(), piece1);
         }
+
+        if (implementFofMethods.ChooseToStack(piece, this.getGridAt(dest).getPiece(), this, dest)) {
+            if (implementFofMethods.x == 0) {
+                System.out.println("fsfsdfsdfs true");
+            } else {
+                System.out.println("fdsofjosjfod false");
+            }
+            System.out.println("CHoose");
+            System.out.println(implementFofMethods.x);
+        }
+        System.out.println(implementFofMethods.x);
+
 
         boolean temp = true;
-
-        if(19<=src.getIndex() && src.getIndex()<=23){
+        if (19 <= src.getIndex() && src.getIndex() <= 22) {
             temp = false;
         }
-        FastWay = implementFofMethods.BonusLocation(dest,piece);
+        if (12 <= dest.getIndex() && dest.getIndex() <= 18) {
+            temp = false;
+        }
+        FastWay = implementFofMethods.BonusLocation(dest, piece);
         FastWay = FastWay & temp;
-        System.out.println(FastWay);
 
+//        if(FastWay){
+//            steps = 4;
+//            if (dest.getIndex() <= 18) {
+//                for (int i = 0; i < steps; i++) {
+//                    dest = nextLocation(dest, piece);
+//                }
+//            } else if (dest.getIndex() >= 19 && dest.getIndex() <= 22) {
+//                dest = new ChessBoardLocation(dest.getColor(), 23);
+//            } else {
+//                int newcolor;
+//                if (dest.getColor() == 0) {
+//                    newcolor = 3;
+//                } else {
+//                    newcolor = dest.getColor() - 1;
+//                }
+//                dest = new ChessBoardLocation(newcolor, 3);
+//
+//                if (dest.getIndex() < 12) {
+//                    for (int i = 0; i < steps - 1; i++) {
+//                        dest = nextLocation(dest, piece);
+//                    }
+//                } else {
+//
+//                    if(NumberTotal[piece.getPlayer()][piece.getNumber()]!=0){
+//                        NumberTotal[piece.getPlayer()][piece.getNumber()] = 2;
+//                    }
+//                    dest = new ChessBoardLocation(dest.getColor(), dest.getIndex() + steps - 1);
+//                }
+//            }
+//        }
 
+        LocationLast = dest;
         setChessPieceAt(dest, removeChessPieceAt(src));
     }
+
+    public ChessBoardLocation getLocationLast() {
+        return LocationLast;
+    }
+
     public boolean isFastWay() {
         return FastWay;
     }
@@ -219,7 +278,7 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         int OldIndex = location.getIndex();
         int NewColor, NewIndex;
 
-        if(NumberTotal[piece.getPlayer()][piece.getNumber()] == 0){
+        if (NumberTotal[piece.getPlayer()][piece.getNumber()] == 0) {
             if (OldIndex >= 19 && OldIndex <= 22) {
                 NewColor = OldColor;
                 NewIndex = 23;
@@ -234,7 +293,7 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
                     NewColor = 0;
                 }
                 NewIndex = 0;
-            } else if (OldIndex == 12 ) {
+            } else if (OldIndex == 12) {
                 System.out.println("player:" + piece.getPlayer());
                 if (piece.getPlayer() == OldColor) {
                     NewColor = OldColor;
@@ -268,32 +327,31 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
                 } else {
                     NewColor = 0;
                 }
-            } else{
+            } else {
                 //13-18
-                if(OldIndex == 18){
-                    NumberTotal[piece.getPlayer()][piece.getNumber()]=NumberTotal[piece.getPlayer()][piece.getNumber()]+1;
+                if (OldIndex == 18) {
+                    NumberTotal[piece.getPlayer()][piece.getNumber()] = NumberTotal[piece.getPlayer()][piece.getNumber()] + 1;
                     NewColor = OldColor;
-                    NewIndex = OldIndex-1;
-                }else{
+                    NewIndex = OldIndex - 1;
+                } else {
                     NewColor = OldColor;
-                    NewIndex = OldIndex +1;
+                    NewIndex = OldIndex + 1;
                 }
             }
-        }else{
+        } else {
             NewColor = OldColor;
-            if(OldIndex == 12){
-                NumberTotal[piece.getPlayer()][piece.getNumber()]=NumberTotal[piece.getPlayer()][piece.getNumber()]+1;
-                NewIndex = OldIndex +1;
-            }
-            else if(OldIndex == 18){
-                NumberTotal[piece.getPlayer()][piece.getNumber()]=NumberTotal[piece.getPlayer()][piece.getNumber()]+1;
-                NewIndex = OldIndex -1;
-            }else{
-                int num = NumberTotal[piece.getPlayer()][piece.getNumber()]%2;
-                if(num == 0){
-                    NewIndex = OldIndex+1;
-                }else{
-                    NewIndex = OldIndex-1;
+            if (OldIndex == 12) {
+                NumberTotal[piece.getPlayer()][piece.getNumber()] = NumberTotal[piece.getPlayer()][piece.getNumber()] + 1;
+                NewIndex = OldIndex + 1;
+            } else if (OldIndex == 18) {
+                NumberTotal[piece.getPlayer()][piece.getNumber()] = NumberTotal[piece.getPlayer()][piece.getNumber()] + 1;
+                NewIndex = OldIndex - 1;
+            } else {
+                int num = NumberTotal[piece.getPlayer()][piece.getNumber()] % 2;
+                if (num == 0) {
+                    NewIndex = OldIndex + 1;
+                } else {
+                    NewIndex = OldIndex - 1;
                 }
             }
         }

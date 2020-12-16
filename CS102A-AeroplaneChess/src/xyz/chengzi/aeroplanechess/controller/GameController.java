@@ -25,6 +25,13 @@ public class GameController implements InputListener, Listenable<GameStateListen
     private int notation;
     private int numberOfDiceOne,numberOfDiceTwo;
 
+    public int getNumberOfDiceTwo() {
+        return numberOfDiceTwo;
+    }
+
+    public int getNumberOfDiceOne() {
+        return numberOfDiceOne;
+    }
 
     public void setNumberOfDiceOne(int numberOfDiceOne) {
         this.numberOfDiceOne = numberOfDiceOne;
@@ -89,7 +96,7 @@ public class GameController implements InputListener, Listenable<GameStateListen
     }
 
     public int rollDice() {
-        if (rolledNumber == null) {
+        if (rolledNumber == null || implementFofMethods.getNumberOfSecondRoll() != 0 ) {
             rolledNumber = RandomUtil.nextInt(1, 6);
             rolledNumber <<= 16;
             int number2 = RandomUtil.nextInt(1, 6);
@@ -130,18 +137,42 @@ public class GameController implements InputListener, Listenable<GameStateListen
                 }
             }
             if (piece.getPlayer() == currentPlayer) {
+                model.moveChessPiece(location,x,piece);
+//                System.out.println("Controller  :"+model.isFastWay());
                 if(model.isFastWay()){
-                    model.moveChessPiece(location, x+4, piece);
-                }else{
-                    model.moveChessPiece(location, x, piece);
+                    ChessBoardLocation chessBoardLocation = model.getLocationLast();
+                    if(location.getIndex() == 4 || chessBoardLocation.getIndex() == 4){
+                        model.moveChessPiece(chessBoardLocation,12,piece);
+                        ChessBoardLocation locationOfBeatenChess = new ChessBoardLocation(Math.abs(piece.getPlayer()-2),15);
+                        if(model.getGridAt(locationOfBeatenChess).getPiece() != null){
+                            int player = model.getGridAt(locationOfBeatenChess).getPiece().getPlayer();
+                            int number = model.getGridAt(locationOfBeatenChess).getPiece().getNumber();
+                            ChessBoardLocation location1 = new ChessBoardLocation(player,number+ getModel().getEndDimension()+ model.getDimension());
+                            model.setChessPieceAt(location1,model.getGridAt(locationOfBeatenChess).getPiece());
+                            model.removeChessPieceAt(locationOfBeatenChess);
+                        }
+
+                    }else{
+                        model.moveChessPiece(chessBoardLocation, 4, piece);
+                    }
                 }
 
                 listenerList.forEach(listener -> listener.onPlayerEndRound(currentPlayer));
-                nextPlayer();
+                if(!implementFofMethods.anotherRoll(numberOfDiceOne, numberOfDiceTwo)){
+                    nextPlayer();
+                }
+                if(implementFofMethods.TooLuckyTooUnlucky(currentPlayer,numberOfDiceOne,numberOfDiceTwo)){
+                    for(int i =0;i<4;i++){
+                        model.initializeOnePlayer(currentPlayer);
+                    }
+                    nextPlayer();
+                }
                 listenerList.forEach(listener -> listener.onPlayerStartRound(currentPlayer));
             }
         }
     }
+
+
 
     @Override
     public void registerListener(GameStateListener listener) {

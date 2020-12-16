@@ -28,8 +28,6 @@ public class DiceSelectorComponent extends JComponent implements ItemListener {
         diceComboBox.setVisible(false);
         add(diceComboBox);
 
-
-
         manualDiceRadio = new JRadioButton("manual");
         randomDiceRadio = new JRadioButton("auto", true);
 

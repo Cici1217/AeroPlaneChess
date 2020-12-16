@@ -21,14 +21,16 @@ public interface MethodsForPlaying {
 
     boolean BonusLocation(ChessBoardLocation location , ChessPiece chessPiece);
 
+    boolean anotherRoll(int numberOfDiceTwo,int numberOfDiceOne);
+
     //TODO:next:implement methods
 
-    List<ChessLocation> EatOtherPiecesWhenFlying(ChessLocation locationOne, ChessLocation locationTwo,ChessLocation locationThree);
+//    ChessPiece EatOtherPiecesWhenFlying(ChessPiece chessPiece1 , ChessPiece chessPiece2 , ChessBoardLocation location);
 
     //There are additional shortcut squares. When a plane lands on one of these of its
     //own colour, it may take the shortcut, and any opposing planes in the path of the
     //shortcut are sent back to their hangars.
-    void TooLuckyTooUnlucky();
+    boolean TooLuckyTooUnlucky(int player ,int NumberOfDiceOne , int NumberOfDiceTwo);
 
     //If the sum of the two dices is no less than 10, whether they are used to enter or
     //move a piece, gives that player another roll. A second sum no less than 10 gives
@@ -37,11 +39,14 @@ public interface MethodsForPlaying {
     //play passes to the next player.
 
 
-    void ChooseToStack(ChessLocation locationOne, ChessLocation locationTwo);
+    boolean ChooseToStack(ChessPiece chessPiece1 , ChessPiece chessPiece2 ,ChessBoard board , ChessBoardLocation location2);
     //When a plane lands on another plane in its own color, the player can choose to stack
     //the pieces and move them as one piece until they reach the centre or are landed on by
     //an opponent. When stacked pieces are sent back to their hangar by an opponent
     //landing on them, they are no longer stacked.
+
+//    boolean WhetherToChooseStackTrue();
+
     void CompeteForEatingPiece(int DiceOne , int DiceTwo);
     //When a plane lands on an opposing plane, players determine which gets sent back to
     //its hangar by rolling one die, with the high roll determining the winner. When one
