@@ -7,18 +7,20 @@ import xyz.chengzi.aeroplanechess.model.ChessBoardLocation;
 import xyz.chengzi.aeroplanechess.model.ChessPiece;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import xyz.chengzi.aeroplanechess.model.StackPiece;
+
 public class GameFrame extends JFrame implements GameStateListener {
-    private static final String[] PLAYER_NAMES = {"Yellow", "Blue","Green","Red"};
+    private static final String[] PLAYER_NAMES = {"Yellow", "Blue", "Green", "Red"};
     private final JLabel statusLabel = new JLabel();
     public int num1;
     public int num2;
-
 
 
     public GameFrame(GameController controller) {
@@ -30,11 +32,27 @@ public class GameFrame extends JFrame implements GameStateListener {
         save.addActionListener((e -> {
             ChessBoard board = controller.getModel();
             ChessBoardLocation lists[][] = new ChessBoardLocation[4][4];
+
             int turn = controller.getCurrentPlayer();
             for (int player = 0; player < 4; player++) {
                 for (int index = 0; index < 24; index++) {
                     ChessPiece piece;
                     if ((piece = board.getChessPieceAt(new ChessBoardLocation(player, index))) != null) {
+                        if (piece instanceof StackPiece) {
+                            StackPiece stackPiece = (StackPiece) piece;
+                            for (Integer num : stackPiece.getStackPieceNums()) {
+                                lists[piece.getPlayer()][num] = new ChessBoardLocation(-1, piece.getNumber());
+                            }
+                            for (ChessPiece guest : stackPiece.getGuestPieces()) {
+                                if (guest instanceof StackPiece) {
+                                    for (Integer num : ((StackPiece) guest).getStackPieceNums()) {
+                                        lists[piece.getPlayer()][num] = new ChessBoardLocation(-1, guest.getNumber());
+                                    }
+                                }
+                                lists[piece.getPlayer()][guest.getNumber()] =
+                                        new ChessBoardLocation(-2, piece.getNumber());
+                            }
+                        }
                         int color = piece.getPlayer();
                         int number = piece.getNumber();
                         lists[color][number] = new ChessBoardLocation(player, index);
@@ -71,6 +89,17 @@ public class GameFrame extends JFrame implements GameStateListener {
         load.setLocation(600, 300);
         load.setFont(load.getFont().deriveFont(18.0f));
         load.setSize(90, 30);
+
+        JButton restart = new JButton("Restart");
+        restart.setLocation(600, 400);
+        restart.setFont(restart.getFont().deriveFont(18.0f));
+        restart.setSize(120, 30);
+        add(restart);
+        restart.addActionListener(e ->
+        {
+            controller.initializeGame();
+        });
+
         load.addActionListener(e -> {
             String choose = chooseArchive();
             File file = new File(choose);
@@ -79,24 +108,23 @@ public class GameFrame extends JFrame implements GameStateListener {
             int turn = 0;
             try {
                 BufferedReader br = new BufferedReader(new FileReader(file));
-                String line = null;
+                String line;
                 int index = 0;
                 while ((line = br.readLine()) != null) {
                     System.out.println(line);
-                    if (index<4)
+                    if (index < 4) {
                         loadedList[index++] = line;
-                    else
+                    } else {
                         turn = Integer.parseInt(line);
+                    }
                 }
-
-                System.out.println("turn:"+turn);
-
                 br.close();
             } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
+
 
             for (int player = 0; player < 4; player++) {
                 String[] splitedStr = loadedList[player].split(" ");
@@ -108,7 +136,7 @@ public class GameFrame extends JFrame implements GameStateListener {
                             new ChessBoardLocation(Integer.parseInt(leftNum), Integer.parseInt(rightNum));
                 }
             }
-            controller.loadGame(locations,turn);
+            controller.loadGame(locations, turn);
         });
         add(load);
 
@@ -128,14 +156,13 @@ public class GameFrame extends JFrame implements GameStateListener {
         DiceSelectorComponent diceSelectorComponent1 = new DiceSelectorComponent();
         NotationSelectorComponent notationSelectorComponent = new NotationSelectorComponent();
         diceSelectorComponent.setLocation(396, 585);
-        diceSelectorComponent1.setLocation(396,615);
-        notationSelectorComponent.setLocation(396-220,645);
+        diceSelectorComponent1.setLocation(396, 615);
+        notationSelectorComponent.setLocation(396 - 220, 645);
         add(diceSelectorComponent);
         add(diceSelectorComponent1);
         add(notationSelectorComponent);
 
         JButton button = new JButton("roll");
-
 
         button.addActionListener((e) -> {
             if (diceSelectorComponent.isRandomDice()) {
@@ -156,50 +183,51 @@ public class GameFrame extends JFrame implements GameStateListener {
                 num1 = (Integer) diceSelectorComponent1.getSelectedDice();
                 num2 = (Integer) diceSelectorComponent.getSelectedDice();
                 statusLabel.setText(String.format("[%s] Selected a (%d)(%d) ",
-                    PLAYER_NAMES[controller.getCurrentPlayer()], num1, num2));
+                        PLAYER_NAMES[controller.getCurrentPlayer()], num1, num2));
                 controller.setNumberOfDiceOne(num1);
                 controller.setNumberOfDiceTwo(num2);
-                controller.manualDice(num1,num2);
+                controller.manualDice(num1, num2);
+
             }
         });
 
         JButton button1 = new JButton("choose");
         button1.addActionListener((e) -> {
-            if(notationSelectorComponent.WhichNotationToChoose() == 0){
+            if (notationSelectorComponent.WhichNotationToChoose() == 0) {
                 controller.setNotation(0);
                 statusLabel.setText(String.format("[%s] Choose + , sum is %d",
-                        PLAYER_NAMES[controller.getCurrentPlayer()],controller.getRolledNumber()));
-            }else if(notationSelectorComponent.WhichNotationToChoose() == 1){
+                        PLAYER_NAMES[controller.getCurrentPlayer()], controller.getRolledNumber()));
+            } else if (notationSelectorComponent.WhichNotationToChoose() == 1) {
                 controller.setNotation(1);
-                if(controller.getRolledNumber() == 0){
+                if (controller.getRolledNumber() == 0) {
                     JOptionPane.showMessageDialog(this, "You can't choose this!");
-                }else{
+                } else {
                     statusLabel.setText(String.format("[%s] Choose - , sum is %d",
-                            PLAYER_NAMES[controller.getCurrentPlayer()],controller.getRolledNumber()));
+                            PLAYER_NAMES[controller.getCurrentPlayer()], controller.getRolledNumber()));
                 }
-            }else if(notationSelectorComponent.WhichNotationToChoose() == 2){
+            } else if (notationSelectorComponent.WhichNotationToChoose() == 2) {
                 controller.setNotation(2);
-                if(controller.getRolledNumber() == 0){
+                if (controller.getRolledNumber() == 0) {
                     JOptionPane.showMessageDialog(this, "You can't choose this!");
-                }else{
+                } else {
                     statusLabel.setText(String.format("[%s] Choose x , sum is %d",
-                            PLAYER_NAMES[controller.getCurrentPlayer()],controller.getRolledNumber()));
+                            PLAYER_NAMES[controller.getCurrentPlayer()], controller.getRolledNumber()));
                 }
-            }else{
+            } else {
                 controller.setNotation(3);
-                if(controller.getRolledNumber() == 0){
+                if (controller.getRolledNumber() == 0) {
                     JOptionPane.showMessageDialog(this, "You can't choose this!");
-                }else{
+                } else {
                     statusLabel.setText(String.format("[%s] Choose / , sum is %d",
-                            PLAYER_NAMES[controller.getCurrentPlayer()],controller.getRolledNumber()));
+                            PLAYER_NAMES[controller.getCurrentPlayer()], controller.getRolledNumber()));
                 }
 
             }
         });
 
-        button1.setLocation(668,620);
+        button1.setLocation(668, 620);
         button1.setFont(button1.getFont().deriveFont(18.0f));
-        button1.setSize(90,30);
+        button1.setSize(90, 30);
         add(button1);
 
         button.setLocation(668, 585);
@@ -223,7 +251,6 @@ public class GameFrame extends JFrame implements GameStateListener {
         }
         return filePath;
     }
-
 
 
     @Override

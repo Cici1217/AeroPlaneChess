@@ -14,6 +14,7 @@ import xyz.chengzi.aeroplanechess.view.NotationSelectorComponent;
 import xyz.chengzi.aeroplanechess.view.SquareComponent;
 
 import javax.swing.event.EventListenerList;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,13 @@ public class GameController implements InputListener, Listenable<GameStateListen
     private int notation;
     private int numberOfDiceOne,numberOfDiceTwo;
 
+    public int getNumberOfDiceTwo() {
+        return numberOfDiceTwo;
+    }
+
+    public int getNumberOfDiceOne() {
+        return numberOfDiceOne;
+    }
 
     public void setNumberOfDiceOne(int numberOfDiceOne) {
         this.numberOfDiceOne = numberOfDiceOne;
@@ -88,8 +96,19 @@ public class GameController implements InputListener, Listenable<GameStateListen
         listenerList.forEach(listener -> listener.onPlayerStartRound(currentPlayer));
     }
 
+
+    public void CompeteForChess(){
+        if(model.isWhetherToEat()){
+            int dice1 = rollDice();
+            int num1 = dice1 >> 16;
+            int num2 = dice1 & 0x00ff;
+            setNumberOfDiceOne(num1);
+            setNumberOfDiceTwo(num2);
+        }
+    }
+
     public int rollDice() {
-        if (rolledNumber == null) {
+        if (rolledNumber == null || implementFofMethods.getNumberOfSecondRoll() != 0 ) {
             rolledNumber = RandomUtil.nextInt(1, 6);
             rolledNumber <<= 16;
             int number2 = RandomUtil.nextInt(1, 6);
@@ -107,9 +126,14 @@ public class GameController implements InputListener, Listenable<GameStateListen
     }
 
     public int nextPlayer() {
+//        if (model.isWhetherToEat()) {
+//            model.temp
+//        }
         rolledNumber = null;
         return currentPlayer = (currentPlayer + 1) % 4;
     }
+
+
 
 
     @Override
@@ -119,6 +143,7 @@ public class GameController implements InputListener, Listenable<GameStateListen
 
     @Override
     public void onPlayerClickChessPiece(ChessBoardLocation location, ChessComponent component) {
+        System.out.println("clicked piece "+model.getChessPieceAt(location));
         if (rolledNumber != null) {
             ChessPiece piece = model.getChessPieceAt(location);
             int x = getRolledNumber();
@@ -129,19 +154,67 @@ public class GameController implements InputListener, Listenable<GameStateListen
                     x = 0;
                 }
             }
-            if (piece.getPlayer() == currentPlayer) {
+            if (piece.getPlayer() == currentPlayer ) {
+                model.moveChessPiece(location,x,piece);
+//                System.out.println("Controller  :"+model.isFastWay());
                 if(model.isFastWay()){
-                    model.moveChessPiece(location, x+4, piece);
-                }else{
-                    model.moveChessPiece(location, x, piece);
+                    ChessBoardLocation chessBoardLocation = model.getLocationLast();
+                    if(location.getIndex() == 4 || chessBoardLocation.getIndex() == 4){
+                        model.moveChessPiece(chessBoardLocation,12,piece);
+                        ChessBoardLocation locationOfBeatenChess = new ChessBoardLocation(Math.abs(piece.getPlayer()-2),15);
+                        if(model.getGridAt(locationOfBeatenChess).getPiece() != null){// 如果在shortcut落点发现棋子，并且该棋子不是叠子
+                            int player = model.getGridAt(locationOfBeatenChess).getPiece().getPlayer();
+                            int number = model.getGridAt(locationOfBeatenChess).getPiece().getNumber();
+                            ChessBoardLocation location1 = new ChessBoardLocation(player,number+ getModel().getEndDimension()+ model.getDimension());
+                            model.setChessPieceAt(location1,model.getGridAt(locationOfBeatenChess).getPiece());
+                            model.removeChessPieceAt(locationOfBeatenChess);
+                        }
+
+                    }else{
+                        model.moveChessPiece(chessBoardLocation, 4, piece);
+                    }
                 }
 
                 listenerList.forEach(listener -> listener.onPlayerEndRound(currentPlayer));
-                nextPlayer();
+                if(!implementFofMethods.anotherRoll(numberOfDiceOne, numberOfDiceTwo)){
+                    nextPlayer();
+                }
+                if(implementFofMethods.TooLuckyTooUnlucky(currentPlayer,numberOfDiceOne,numberOfDiceTwo)){
+                    for(int i =0;i<4;i++){
+                        model.initializeOnePlayer(currentPlayer);
+                    }
+                    nextPlayer();
+                }
                 listenerList.forEach(listener -> listener.onPlayerStartRound(currentPlayer));
+                //-----------------------
+
+                for (int player = 0; player < 4; player++) {
+                    for (int index = model.getDimension() + model.getEndDimension();
+                         index < model.getDimension() + model.getEndDimension() + 4; index++){
+                        if (model.getGridAt(new ChessBoardLocation(player,index)).win){
+                            switch (model.getChessPieceAt(new ChessBoardLocation(player,index)).getPlayer()){
+                                case 0:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.yellow);
+                                    break;
+                                case 1:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.blue);
+                                    break;
+                                case 2:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.green);
+                                    break;
+                                case 3:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.red);
+                                    break;
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }
+
+
 
     @Override
     public void registerListener(GameStateListener listener) {
