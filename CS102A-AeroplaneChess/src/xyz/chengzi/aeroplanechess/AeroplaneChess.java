@@ -4,6 +4,7 @@ import xyz.chengzi.aeroplanechess.controller.GameController;
 import xyz.chengzi.aeroplanechess.model.ChessBoard;
 import xyz.chengzi.aeroplanechess.view.ChessBoardComponent;
 import xyz.chengzi.aeroplanechess.view.GameFrame;
+import xyz.chengzi.aeroplanechess.view.Music;
 
 import javax.swing.*;
 
@@ -19,6 +20,9 @@ public class AeroplaneChess {
             mainFrame.add(chessBoardComponent);
             mainFrame.setVisible(true);
             controller.initializeGame();
+            Music music = new Music();
+            music.playMusic();
+            music.loopMusic();
         });
     }
 }
