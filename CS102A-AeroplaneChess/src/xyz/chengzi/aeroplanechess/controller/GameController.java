@@ -96,6 +96,17 @@ public class GameController implements InputListener, Listenable<GameStateListen
         listenerList.forEach(listener -> listener.onPlayerStartRound(currentPlayer));
     }
 
+
+    public void CompeteForChess(){
+        if(model.isWhetherToEat()){
+            int dice1 = rollDice();
+            int num1 = dice1 >> 16;
+            int num2 = dice1 & 0x00ff;
+            setNumberOfDiceOne(num1);
+            setNumberOfDiceTwo(num2);
+        }
+    }
+
     public int rollDice() {
         if (rolledNumber == null || implementFofMethods.getNumberOfSecondRoll() != 0 ) {
             rolledNumber = RandomUtil.nextInt(1, 6);
@@ -115,9 +126,14 @@ public class GameController implements InputListener, Listenable<GameStateListen
     }
 
     public int nextPlayer() {
+//        if (model.isWhetherToEat()) {
+//            model.temp
+//        }
         rolledNumber = null;
         return currentPlayer = (currentPlayer + 1) % 4;
     }
+
+
 
 
     @Override
@@ -138,7 +154,7 @@ public class GameController implements InputListener, Listenable<GameStateListen
                     x = 0;
                 }
             }
-            if (piece.getPlayer() == currentPlayer) {
+            if (piece.getPlayer() == currentPlayer ) {
                 model.moveChessPiece(location,x,piece);
 //                System.out.println("Controller  :"+model.isFastWay());
                 if(model.isFastWay()){

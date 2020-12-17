@@ -6,7 +6,10 @@ import xyz.chengzi.aeroplanechess.controller.GameController;
 import xyz.chengzi.aeroplanechess.listener.ChessBoardListener;
 import xyz.chengzi.aeroplanechess.listener.ImplementFofMethods;
 import xyz.chengzi.aeroplanechess.listener.Listenable;
+import xyz.chengzi.aeroplanechess.util.RandomUtil;
+import xyz.chengzi.aeroplanechess.view.Compete;
 import xyz.chengzi.aeroplanechess.view.GameFrame;
+import xyz.chengzi.aeroplanechess.view.Win;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -20,7 +23,16 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
     //    private List<ChessPiece> chessPieces = new ArrayList<>();
     private boolean IsThereAPlane;
     private boolean WhetherToEat;
+    public int x = 0;
 
+    public boolean isWhetherToEat() {
+        return WhetherToEat;
+    }
+
+    public int WinOf0 = 0;
+    public int WinOf1 = 0;
+    public int WinOf2 = 0;
+    public int WinOf3 = 0;
     private ChessBoardLocation LocationLast;
     private boolean FastWay;
 
@@ -204,7 +216,6 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         if (steps == 0) {
             return;
         }
-
         if (dest.getIndex() <= 18) {
             for (int i = 0; i < steps; i++) {
                 dest = nextLocation(dest, piece);
@@ -253,14 +264,54 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         } else {
             EatenPieces.add(EatenPiece);
         }
-
+        Compete compete = null;
         WhetherToEat = implementFofMethods.EatOthersPiece(piece, EatenPiece, this, destold, dest);
         if (WhetherToEat) {
             for (ChessPiece piece1 : EatenPieces) {
-                int number = piece1.getNumber();
-                int color = piece1.getPlayer();
+                int number;
+                int color;
+                compete = new Compete();
+//                System.out.println(compete.b);
+                if (compete.b) {
+                    //attacker win
+                    number = piece1.getNumber();
+                    color = piece1.getPlayer();
+                    if (EatenPiece instanceof StackPiece) {
+                        ArrayList<Integer> nums = ((StackPiece) EatenPiece).getStackPieceNums();
+                        for (int idx = 0; idx < nums.size(); idx++) {
+                            if (nums.get(idx) == number) {
+                                nums.remove(idx);
+                                break;
+                            }
+                        }
+//                        if (number == EatenPiece.getNumber()) {
+//                            int leftPieceNum = ((StackPiece) EatenPiece).getStackPieceNums().get(0);
+//                            ArrayList<Integer> leftStacks = ((StackPiece) EatenPiece).getStackPieceNums();
+//                            leftStacks.remove(0);
+//                            StackPiece newStack = new StackPiece(EatenPiece.getPlayer(), leftPieceNum);
+//                            newStack.addPiece(leftStacks);
+//                            EatenPiece = newStack;
+//                        }
+                    }
+
+                    System.out.println("first status");
+                    System.out.println(number);
+                    System.out.println(color);
+                    setChessPieceAt(grid[color][number + dimension + endDimension].getLocation(), piece1);
+
+                } else {
+                    //definer win
+                    number = piece.getNumber();
+                    color = piece.getPlayer();
+                    System.out.println("second status");
+                    System.out.println(number);
+                    System.out.println(color);
+                    setChessPieceAt(grid[color][number + dimension + endDimension].getLocation(), piece);
+                }
+
 //            ChessPiece piece1 = new ChessPiece(color, number);
-                setChessPieceAt(grid[color][number + dimension + endDimension].getLocation(), piece1);
+
+
             }
         }
 
@@ -277,6 +328,9 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
         LocationLast = dest;
         ChessPiece srcPiece = piece;
         ChessPiece newPiece = srcPiece;
+        if (compete != null && !compete.b) {
+            newPiece = EatenPiece;
+        }
         if (srcPiece instanceof StackPiece &&
                 ((StackPiece) srcPiece).getGuestPieces().size() != 0) {//src的棋子是复数个棋子重合（非叠子）
             newPiece = ((StackPiece) srcPiece).getOneGuest();
@@ -294,12 +348,30 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
             ChessPiece chessPiece = this.getGridAt(dest).getPiece();
             if (chessPiece instanceof StackPiece) {
                 for (Integer piece1 : ((StackPiece) chessPiece).getStackPieceNums()) {
+                    if (srcPiece.getPlayer() == 0) {
+                        WinOf0++;
+                    } else if (srcPiece.getPlayer() == 1) {
+                        WinOf1++;
+                    } else if (srcPiece.getPlayer() == 2) {
+                        WinOf2++;
+                    } else {
+                        WinOf3++;
+                    }
                     ChessPiece chessPiece1 = new ChessPiece(srcPiece.getPlayer(), piece1);
                     setChessPieceAt(
                             grid[srcPiece.getPlayer()][piece1 + dimension + endDimension].getLocation(),
                             chessPiece1);
                     this.getGridAt(new ChessBoardLocation(srcPiece.getPlayer(),
                             piece1 + dimension + endDimension)).win = true;
+                }
+                if (srcPiece.getPlayer() == 0) {
+                    WinOf0++;
+                } else if (srcPiece.getPlayer() == 1) {
+                    WinOf1++;
+                } else if (srcPiece.getPlayer() == 2) {
+                    WinOf2++;
+                } else {
+                    WinOf3++;
                 }
                 ChessPiece chessPiece2 = new ChessPiece(srcPiece.getPlayer(), chessPiece.getNumber());
                 setChessPieceAt(
@@ -309,12 +381,27 @@ public class ChessBoard implements Listenable<ChessBoardListener> {
                 this.getGridAt(new ChessBoardLocation(srcPiece.getPlayer(),
                         chessPiece.getNumber() + dimension + endDimension)).win = true;
             } else {
-
+                if (srcPiece.getPlayer() == 0) {
+                    WinOf0++;
+                } else if (srcPiece.getPlayer() == 1) {
+                    WinOf1++;
+                } else if (srcPiece.getPlayer() == 2) {
+                    WinOf2++;
+                } else {
+                    WinOf3++;
+                }
             }
             removeChessPieceAt(dest);
 
         }
 
+        if (WinOf0 == 4 || WinOf2 == 4 || WinOf1 == 4 || WinOf3 == 4) {
+            Win win = new Win();
+            JLabel j = new JLabel("0");
+            win.add(j);
+            j.setVisible(true);
+            win.setLocation(396, 585);
+        }
     }
 
     public ChessBoardLocation getLocationLast() {
