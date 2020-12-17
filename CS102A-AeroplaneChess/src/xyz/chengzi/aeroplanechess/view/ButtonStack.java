@@ -11,7 +11,7 @@ public class ButtonStack extends JComponent implements ItemListener {
     private JRadioButton Yes;
     private JRadioButton No;
     private JComboBox<Integer> diceComboBox;
-private int Stack ;
+    private int Stack ;
 
     public int getStack() {
         return Stack;
@@ -75,6 +75,6 @@ private int Stack ;
 
     @Override
     public void itemStateChanged(ItemEvent e) {
-        new ButtonStack();
+        System.out.println("Stack is :"+Stack);
     }
 }

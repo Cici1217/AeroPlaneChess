@@ -14,6 +14,7 @@ import xyz.chengzi.aeroplanechess.view.NotationSelectorComponent;
 import xyz.chengzi.aeroplanechess.view.SquareComponent;
 
 import javax.swing.event.EventListenerList;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,6 +127,7 @@ public class GameController implements InputListener, Listenable<GameStateListen
 
     @Override
     public void onPlayerClickChessPiece(ChessBoardLocation location, ChessComponent component) {
+        System.out.println("clicked piece "+model.getChessPieceAt(location));
         if (rolledNumber != null) {
             ChessPiece piece = model.getChessPieceAt(location);
             int x = getRolledNumber();
@@ -144,7 +146,7 @@ public class GameController implements InputListener, Listenable<GameStateListen
                     if(location.getIndex() == 4 || chessBoardLocation.getIndex() == 4){
                         model.moveChessPiece(chessBoardLocation,12,piece);
                         ChessBoardLocation locationOfBeatenChess = new ChessBoardLocation(Math.abs(piece.getPlayer()-2),15);
-                        if(model.getGridAt(locationOfBeatenChess).getPiece() != null){
+                        if(model.getGridAt(locationOfBeatenChess).getPiece() != null){// 如果在shortcut落点发现棋子，并且该棋子不是叠子
                             int player = model.getGridAt(locationOfBeatenChess).getPiece().getPlayer();
                             int number = model.getGridAt(locationOfBeatenChess).getPiece().getNumber();
                             ChessBoardLocation location1 = new ChessBoardLocation(player,number+ getModel().getEndDimension()+ model.getDimension());
@@ -168,6 +170,30 @@ public class GameController implements InputListener, Listenable<GameStateListen
                     nextPlayer();
                 }
                 listenerList.forEach(listener -> listener.onPlayerStartRound(currentPlayer));
+                //-----------------------
+
+                for (int player = 0; player < 4; player++) {
+                    for (int index = model.getDimension() + model.getEndDimension();
+                         index < model.getDimension() + model.getEndDimension() + 4; index++){
+                        if (model.getGridAt(new ChessBoardLocation(player,index)).win){
+                            switch (model.getChessPieceAt(new ChessBoardLocation(player,index)).getPlayer()){
+                                case 0:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.yellow);
+                                    break;
+                                case 1:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.blue);
+                                    break;
+                                case 2:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.green);
+                                    break;
+                                case 3:
+                                    view.setChessAtGrid(new ChessBoardLocation(player,index), Color.red);
+                                    break;
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }
